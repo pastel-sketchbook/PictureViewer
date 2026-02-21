@@ -13,7 +13,7 @@ struct PictureViewerApp: App {
         .environmentObject(imageStore)
     }
     .windowStyle(.hiddenTitleBar)
-    .defaultSize(width: 1100, height: 750)
+    .defaultSize(width: 1440, height: 900)
   }
 }
 
@@ -25,6 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
   func applicationDidFinishLaunching(_ notification: Notification) {
     registerBundledFonts()
+    registerAppIcon()
 
     NotificationCenter.default.addObserver(
       self,
@@ -56,5 +57,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     for case let fileURL as URL in enumerator where fileURL.pathExtension == "ttf" {
       CTFontManagerRegisterFontsForURL(fileURL as CFURL, .process, nil)
     }
+  }
+
+  /// Sets the Dock icon from the bundled .icns file.
+  @MainActor private func registerAppIcon() {
+    guard
+      let iconURL = Bundle.module.url(
+        forResource: "icon", withExtension: "icns", subdirectory: "Icons")
+    else { return }
+    NSApplication.shared.applicationIconImage = NSImage(contentsOf: iconURL)
   }
 }

@@ -12,7 +12,8 @@ let package = Package(
             name: "PictureViewer",
             path: "Sources/PictureViewer",
             resources: [
-                .copy("Resources/Fonts")
+                .copy("Resources/Fonts"),
+                .copy("Resources/Icons"),
             ],
             swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency")

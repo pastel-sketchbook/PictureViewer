@@ -42,16 +42,36 @@ tasks:
   # ── Run ───────────────────────────────────────────────────────────────────
 
   dev:run:
-    desc: Build and run the app (debug)
+    desc: Build and run as .app bundle (debug)
     deps: [build]
     cmds:
-      - swift run PictureViewer
+      - task: bundle
+        vars: { CONFIG: debug }
+      - open .build/PictureViewer.app
 
   run:
-    desc: Build and run the app (release)
+    desc: Build and run as .app bundle (release)
     deps: [build:release]
     cmds:
-      - .build/release/PictureViewer
+      - task: bundle
+        vars: { CONFIG: release }
+      - open .build/PictureViewer.app
+
+  # ── App Bundle ───────────────────────────────────────────────────────────
+
+  bundle:
+    desc: Assemble .app bundle from built binary
+    vars:
+      CONFIG: '{{.CONFIG | default "debug"}}'
+      APP: .build/PictureViewer.app
+    cmds:
+      - rm -rf "{{.APP}}"
+      - mkdir -p "{{.APP}}/Contents/MacOS"
+      - mkdir -p "{{.APP}}/Contents/Resources"
+      - cp Info.plist "{{.APP}}/Contents/Info.plist"
+      - cp ".build/{{.CONFIG}}/PictureViewer" "{{.APP}}/Contents/MacOS/PictureViewer"
+      - cp Resources/Icons/icon.icns "{{.APP}}/Contents/Resources/icon.icns"
+      - cp -R ".build/{{.CONFIG}}/PictureViewer_PictureViewer.bundle" "{{.APP}}/Contents/Resources/"
 
   # ── Quality Gate ──────────────────────────────────────────────────────────
 
