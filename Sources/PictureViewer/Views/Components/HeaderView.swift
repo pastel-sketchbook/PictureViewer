@@ -45,12 +45,18 @@ struct HeaderView: View {
     }
     .padding(.horizontal, 24)
     .padding(.vertical, 16)
-    .background(DesignSystem.headerBackground)
+    .background(
+      LinearGradient(
+        stops: DesignSystem.headerGradientStops,
+        startPoint: .leading,
+        endPoint: .trailing
+      )
+    )
     .overlay(alignment: .bottom) {
       Rectangle()
-        .fill(DesignSystem.primary.opacity(0.5))
+        .fill(DesignSystem.border.opacity(0.5))
         .frame(height: 1)
     }
-    .shadow(color: DesignSystem.primary.opacity(0.15), radius: 4, x: 0, y: 2)
+    .shadow(color: DesignSystem.border.opacity(0.2), radius: 4, x: 0, y: 2)
   }
 }
