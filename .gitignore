@@ -1,0 +1,21 @@
+# Swift / SPM build artifacts
+.build/
+.swiftpm/
+Package.resolved
+
+# Xcode (in case opened via xed)
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+DerivedData/
+
+# macOS
+.DS_Store
+*.dSYM
+*.dSYM.zip
+
+# Editor
+*.swp
+*~
+.vscode/
+.idea/

@@ -1,0 +1,2 @@
+disabled_rules:
+  - trailing_comma  # swift-format requires trailing commas; swiftlint forbids them

@@ -1,0 +1,78 @@
+version: "3"
+
+tasks:
+  # ── Formatting ────────────────────────────────────────────────────────────
+
+  fmt:
+    desc: Format Swift code (swift-format)
+    cmds:
+      - swift-format format --in-place --recursive Sources/
+
+  fmt:check:
+    desc: Check Swift formatting without modifying files
+    cmds:
+      - swift-format lint --strict --recursive Sources/
+
+  # ── Linting ───────────────────────────────────────────────────────────────
+
+  lint:
+    desc: Lint Swift code (swiftlint)
+    cmds:
+      - swiftlint lint --strict Sources/
+
+  lint:fix:
+    desc: Auto-fix lint issues where possible
+    cmds:
+      - swiftlint lint --fix Sources/
+
+  # ── Build ─────────────────────────────────────────────────────────────────
+
+  build:
+    desc: Build the application (fmt + lint as deps)
+    deps: [fmt:check, lint]
+    cmds:
+      - swift build
+
+  build:release:
+    desc: Build optimised release binary
+    deps: [fmt:check, lint]
+    cmds:
+      - swift build -c release
+
+  # ── Run ───────────────────────────────────────────────────────────────────
+
+  dev:run:
+    desc: Build and run the app (debug)
+    deps: [build]
+    cmds:
+      - swift run PictureViewer
+
+  run:
+    desc: Build and run the app (release)
+    deps: [build:release]
+    cmds:
+      - .build/release/PictureViewer
+
+  # ── Quality Gate ──────────────────────────────────────────────────────────
+
+  check:all:
+    desc: Run all quality checks (fmt, lint, build)
+    cmds:
+      - task: fmt:check
+      - task: lint
+      - task: build
+
+  ci:
+    desc: Full CI pipeline (fmt, lint, release build)
+    cmds:
+      - task: fmt:check
+      - task: lint
+      - task: build:release
+
+  # ── Cleanup ───────────────────────────────────────────────────────────────
+
+  clean:
+    desc: Clean build artifacts
+    cmds:
+      - swift package clean
+      - rm -rf .build
