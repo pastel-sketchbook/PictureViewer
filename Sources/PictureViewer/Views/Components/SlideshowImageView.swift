@@ -25,6 +25,13 @@ struct SlideshowImageView: NSViewRepresentable {
     imageLayer.name = "imageLayer"
     imageLayer.contentsGravity = .resizeAspect
     imageLayer.backgroundColor = NSColor.clear.cgColor
+
+    // Pastel shadow — soft warm tone matching the sketchbook aesthetic
+    imageLayer.shadowColor = NSColor(red: 0.72, green: 0.66, blue: 0.58, alpha: 1.0).cgColor
+    imageLayer.shadowOpacity = 0.5
+    imageLayer.shadowOffset = CGSize(width: 0, height: -6)
+    imageLayer.shadowRadius = 16
+
     container.layer?.addSublayer(imageLayer)
 
     return container

@@ -249,6 +249,22 @@ struct TrashIcon: Shape {
   }
 }
 
+/// Lightning bolt — speedy mode toggle.
+struct SpeedIcon: Shape {
+  func path(in rect: CGRect) -> Path {
+    let scale = scaleFactors(in: rect)
+    var path = Path()
+    path.move(to: scaledPoint(13, 2, scale))
+    path.addLine(to: scaledPoint(6, 14, scale))
+    path.addLine(to: scaledPoint(12, 14, scale))
+    path.addLine(to: scaledPoint(11, 22, scale))
+    path.addLine(to: scaledPoint(18, 10, scale))
+    path.addLine(to: scaledPoint(12, 10, scale))
+    path.closeSubpath()
+    return path
+  }
+}
+
 // MARK: - Coordinate helpers
 
 /// Scale factors to map from the 24x24 viewBox into the actual rect.

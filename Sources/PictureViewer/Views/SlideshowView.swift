@@ -39,14 +39,8 @@ struct SlideshowView: View {
 
         Spacer(minLength: 8)
 
-        // Image — constrained to leave room for controls
-        SlideshowImageView(
-          image: currentNSImage,
-          animationType: currentAnimationType,
-          isForward: navigatingForward,
-          isAnimating: $isAnimating
-        )
-        .padding(.horizontal, 60)
+        // Image — sketchbook frame with tape strips
+        slideshowFrame
 
         Spacer(minLength: 32)
 
@@ -102,6 +96,39 @@ struct SlideshowView: View {
           endRadius: 600
         )
       )
+  }
+
+  /// Sketchbook-style image — washi-tape strips stuck directly onto the picture.
+  private var slideshowFrame: some View {
+    SlideshowImageView(
+      image: currentNSImage,
+      animationType: currentAnimationType,
+      isForward: navigatingForward,
+      isAnimating: $isAnimating
+    )
+    // Tape strips — large, stuck directly on picture edges
+    .overlay(alignment: .top) {
+      TapeStrip(color: slideshowTopTape)
+        .scaleEffect(2.4)
+        .rotationEffect(.degrees(-7))
+        .offset(y: -4)
+    }
+    .overlay(alignment: .bottomTrailing) {
+      TapeStrip(color: slideshowBottomTape)
+        .scaleEffect(2.4)
+        .rotationEffect(.degrees(11))
+        .offset(x: -80, y: -10)
+    }
+    .padding(.horizontal, 60)
+  }
+
+  /// Tape color cycling per slide for variety.
+  private var slideshowTopTape: Color {
+    DesignSystem.tapeColors[currentIndex % DesignSystem.tapeColors.count]
+  }
+
+  private var slideshowBottomTape: Color {
+    DesignSystem.tapeColors[(currentIndex + 3) % DesignSystem.tapeColors.count]
   }
 
   /// Top bar — counter pill (right-aligned).
@@ -264,8 +291,11 @@ struct SlideshowView: View {
       restartAutoPlayTimer()
     }
   }
+}
 
-  // MARK: - Delete
+// MARK: - Auto-play & Delete
+
+extension SlideshowView {
 
   /// Move the current image to Trash via FileManager and advance to the next slide.
   private func deleteCurrentImage() {
