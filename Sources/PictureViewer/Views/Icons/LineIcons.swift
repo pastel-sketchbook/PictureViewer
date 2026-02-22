@@ -249,6 +249,22 @@ struct TrashIcon: Shape {
   }
 }
 
+/// Skip-to-first — vertical bar with a left chevron (⏮).
+struct SkipToFirstIcon: Shape {
+  func path(in rect: CGRect) -> Path {
+    let scale = scaleFactors(in: rect)
+    var path = Path()
+    // Vertical bar
+    path.move(to: scaledPoint(6, 6, scale))
+    path.addLine(to: scaledPoint(6, 18, scale))
+    // Left chevron
+    path.move(to: scaledPoint(18, 6, scale))
+    path.addLine(to: scaledPoint(10, 12, scale))
+    path.addLine(to: scaledPoint(18, 18, scale))
+    return path
+  }
+}
+
 /// Lightning bolt — speedy mode toggle.
 struct SpeedIcon: Shape {
   func path(in rect: CGRect) -> Path {

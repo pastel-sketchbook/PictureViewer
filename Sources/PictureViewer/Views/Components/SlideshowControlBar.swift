@@ -8,6 +8,7 @@ struct SlideshowControlBar: View {
   let isPlaying: Bool
   let isSpeedy: Bool
   let onClose: () -> Void
+  let onGoToFirst: () -> Void
   let onPrev: () -> Void
   let onNext: () -> Void
   let onPlay: () -> Void
@@ -40,6 +41,12 @@ struct SlideshowControlBar: View {
       Rectangle()
         .fill(DesignSystem.border)
         .frame(width: 1, height: 24)
+
+      // Go to first
+      controlButton(action: onGoToFirst) {
+        SkipToFirstIcon()
+          .lineIconStyle(color: DesignSystem.textColor, size: 18)
+      }
 
       // Previous
       controlButton(action: onPrev) {

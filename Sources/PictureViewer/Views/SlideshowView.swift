@@ -156,6 +156,7 @@ struct SlideshowView: View {
       isPlaying: isPlaying,
       isSpeedy: isSpeedy,
       onClose: onDismiss,
+      onGoToFirst: navigateToFirst,
       onPrev: navigatePrev,
       onNext: navigateNext,
       onPlay: { if !isPlaying { startAutoPlay() } },
@@ -189,6 +190,15 @@ struct SlideshowView: View {
   }
 
   // MARK: - Navigation
+
+  private func navigateToFirst() {
+    guard !isAnimating, currentIndex != 0 else { return }
+    navigatingForward = false
+    advanceSlide(to: 0)
+    if isPlaying {
+      restartAutoPlayTimer()
+    }
+  }
 
   private func navigateNext() {
     guard !isAnimating else { return }
