@@ -20,6 +20,7 @@ struct SlideshowView: View {
   @State private var glowCycleIdx = 0
   @State private var navigatingForward = true
   @State private var currentNSImage: NSImage?
+  @State private var currentImageSize: CGSize = .zero
   @State private var isSpeedy = false
 
   // Timer for auto-advance
@@ -98,28 +99,59 @@ struct SlideshowView: View {
       )
   }
 
-  /// Sketchbook-style image — washi-tape strips stuck directly onto the picture.
+  /// Sketchbook-style image — washi-tape strips positioned at the actual image edges.
   private var slideshowFrame: some View {
-    SlideshowImageView(
-      image: currentNSImage,
-      animationType: currentAnimationType,
-      isForward: navigatingForward,
-      isAnimating: $isAnimating
-    )
-    // Tape strips — large, stuck directly on picture edges
-    .overlay(alignment: .top) {
-      TapeStrip(color: slideshowTopTape)
-        .scaleEffect(2.4)
-        .rotationEffect(.degrees(-7))
-        .offset(y: -4)
-    }
-    .overlay(alignment: .bottomTrailing) {
-      TapeStrip(color: slideshowBottomTape)
-        .scaleEffect(2.4)
-        .rotationEffect(.degrees(11))
-        .offset(x: -80, y: -10)
+    GeometryReader { geo in
+      let insets = imageInsets(in: geo.size)
+
+      SlideshowImageView(
+        image: currentNSImage,
+        animationType: currentAnimationType,
+        isForward: navigatingForward,
+        isAnimating: $isAnimating
+      )
+      // Tape strip — top center, on actual image edge
+      .overlay(alignment: .top) {
+        TapeStrip(color: slideshowTopTape)
+          .scaleEffect(2.4)
+          .rotationEffect(.degrees(-7))
+          .offset(y: insets.top - 10)
+      }
+      // Tape strip — bottom right, on actual image corner
+      .overlay(alignment: .bottomTrailing) {
+        TapeStrip(color: slideshowBottomTape)
+          .scaleEffect(2.4)
+          .rotationEffect(.degrees(11))
+          .offset(
+            x: -(insets.trailing + 40),
+            y: -(insets.bottom - 10)
+          )
+      }
     }
     .padding(.horizontal, 60)
+  }
+
+  /// Calculate how much the aspect-fitted image is inset from the container edges.
+  private func imageInsets(in containerSize: CGSize) -> EdgeInsets {
+    guard currentImageSize.width > 0, currentImageSize.height > 0,
+      containerSize.width > 0, containerSize.height > 0
+    else {
+      return EdgeInsets()
+    }
+    let containerAspect = containerSize.width / containerSize.height
+    let imageAspect = currentImageSize.width / currentImageSize.height
+
+    if imageAspect > containerAspect {
+      // Image is wider — letterboxed top/bottom
+      let rendered = containerSize.width / imageAspect
+      let inset = (containerSize.height - rendered) / 2
+      return EdgeInsets(top: inset, leading: 0, bottom: inset, trailing: 0)
+    } else {
+      // Image is taller — pillarboxed left/right
+      let rendered = containerSize.height * imageAspect
+      let inset = (containerSize.width - rendered) / 2
+      return EdgeInsets(top: 0, leading: inset, bottom: 0, trailing: inset)
+    }
   }
 
   /// Tape color cycling per slide for variety.
@@ -183,13 +215,20 @@ struct SlideshowView: View {
       currentIndex = idx
     }
     currentNSImage = imageStore.fullImage(for: imageStore.images[currentIndex])
+    currentImageSize = currentNSImage?.size ?? .zero
 
     if autoPlay {
       startAutoPlay()
     }
   }
 
-  // MARK: - Navigation
+}
+
+// MARK: - Navigation, Auto-play & Delete
+
+extension SlideshowView {
+
+  // MARK: Navigation
 
   private func navigateToFirst() {
     guard !isAnimating, currentIndex != 0 else { return }
@@ -231,6 +270,7 @@ struct SlideshowView: View {
     // We update state which triggers the CA transition in the NSView.
     currentIndex = targetIndex
     currentNSImage = targetImage
+    currentImageSize = targetImage?.size ?? .zero
     animCycleIdx += 1
     glowCycleIdx += 1
 
@@ -258,7 +298,7 @@ struct SlideshowView: View {
     }
   }
 
-  // MARK: - Auto-play
+  // MARK: Auto-play
 
   private func togglePlayPause() {
     if isPlaying {
@@ -301,11 +341,8 @@ struct SlideshowView: View {
       restartAutoPlayTimer()
     }
   }
-}
 
-// MARK: - Auto-play & Delete
-
-extension SlideshowView {
+  // MARK: Delete
 
   /// Move the current image to Trash via FileManager and advance to the next slide.
   private func deleteCurrentImage() {
@@ -336,5 +373,6 @@ extension SlideshowView {
       currentIndex = 0
     }
     currentNSImage = imageStore.fullImage(for: remaining[currentIndex])
+    currentImageSize = currentNSImage?.size ?? .zero
   }
 }
