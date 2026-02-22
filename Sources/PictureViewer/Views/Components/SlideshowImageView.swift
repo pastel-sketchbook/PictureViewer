@@ -58,6 +58,24 @@ struct SlideshowImageView: NSViewRepresentable {
     // Only animate if there was a previous image (not first load)
     let hadPreviousImage = imageLayer.contents != nil
 
+    if hadPreviousImage, animationType == .blocks {
+      // Blocks transition — custom grid of tiles that fade out
+      let oldCGImage = imageLayer.contents
+      let fittedRect = nsView.fittedImageRect
+
+      // Set new image immediately (hidden under the old-image tiles)
+      CATransaction.begin()
+      CATransaction.setDisableActions(true)
+      imageLayer.frame = fittedRect
+      imageLayer.contents = newImage.asCGImage
+      CATransaction.commit()
+
+      // Overlay old-image tiles and fade them out
+      performBlocksTransition(
+        oldImage: oldCGImage, on: imageLayer, in: fittedRect)
+      return
+    }
+
     if hadPreviousImage {
       let transition = CATransition()
       transition.duration = transitionDuration
@@ -85,6 +103,7 @@ struct SlideshowImageView: NSViewRepresentable {
     case .bend: return DesignSystem.bendDuration
     case .curl: return DesignSystem.curlDuration
     case .book: return DesignSystem.bookDuration
+    case .blocks: return DesignSystem.blocksDuration
     }
   }
 
@@ -98,7 +117,7 @@ struct SlideshowImageView: NSViewRepresentable {
     case .book:
       // Natural page turn: slow lift → smooth swing → gentle settle
       return CAMediaTimingFunction(controlPoints: 0.4, 0.0, 0.2, 1.0)
-    case .flip, .bend, .curl:
+    case .flip, .bend, .curl, .blocks:
       return CAMediaTimingFunction(controlPoints: 0.25, 0.1, 0.25, 1.0)
     }
   }
@@ -112,11 +131,12 @@ struct SlideshowImageView: NSViewRepresentable {
     case .curl:
       return CATransitionType(rawValue: "pageUnCurl")
     case .book:
-      // Forward → page curls up from the right (turning to next page)
-      // Backward → page uncurls back from the left (turning to previous page)
       return isForward
         ? CATransitionType(rawValue: "pageCurl")
         : CATransitionType(rawValue: "pageUnCurl")
+    case .blocks:
+      // Not used — blocks transition is handled separately
+      return .fade
     }
   }
 
@@ -126,8 +146,84 @@ struct SlideshowImageView: NSViewRepresentable {
     switch animationType {
     case .book:
       return isForward ? .fromRight : .fromLeft
-    case .flip, .bend, .curl:
+    case .flip, .bend, .curl, .blocks:
       return .fromRight
+    }
+  }
+}
+
+// MARK: - Blocks (mosaic dissolve) transition
+
+extension SlideshowImageView {
+
+  /// Overlay a grid of tiles showing the old image, then fade each tile out
+  /// with staggered random delays to reveal the new image underneath.
+  ///
+  /// All animations run on the Core Animation compositor — zero main-thread work.
+  func performBlocksTransition(
+    oldImage: Any?, on imageLayer: CALayer, in rect: CGRect
+  ) {
+    // Remove any leftover tiles from a previous blocks transition
+    if let tiles = imageLayer.sublayers?.filter({ $0.name == "blockTile" }) {
+      for tile in tiles { tile.removeFromSuperlayer() }
+    }
+
+    guard let cgImage = oldImage else { return }
+
+    let edge = DesignSystem.blocksEdge
+    let cols = max(1, Int(ceil(rect.width / edge)))
+    let rows = max(1, Int(ceil(rect.height / edge)))
+    let tileW = rect.width / CGFloat(cols)
+    let tileH = rect.height / CGFloat(rows)
+
+    let totalDuration = DesignSystem.blocksDuration
+    let fadeDuration = DesignSystem.blocksBlockFade
+    let maxDelay = totalDuration - fadeDuration
+
+    for row in 0..<rows {
+      for col in 0..<cols {
+        let tile = CALayer()
+        tile.name = "blockTile"
+        // Position relative to the imageLayer (origin 0,0)
+        tile.frame = CGRect(
+          x: CGFloat(col) * tileW,
+          y: CGFloat(row) * tileH,
+          width: tileW,
+          height: tileH
+        )
+        tile.contents = cgImage
+        tile.contentsGravity = .resizeAspect
+
+        // Map this tile's rect to a normalized contentsRect (0..1)
+        tile.contentsRect = CGRect(
+          x: CGFloat(col) / CGFloat(cols),
+          y: CGFloat(row) / CGFloat(rows),
+          width: 1.0 / CGFloat(cols),
+          height: 1.0 / CGFloat(rows)
+        )
+
+        tile.masksToBounds = true
+        imageLayer.addSublayer(tile)
+
+        // Staggered fade-out — random delay per tile
+        let delay = Double.random(in: 0...maxDelay)
+        let fade = CABasicAnimation(keyPath: "opacity")
+        fade.fromValue = 1.0
+        fade.toValue = 0.0
+        fade.beginTime = CACurrentMediaTime() + delay
+        fade.duration = fadeDuration
+        fade.timingFunction = CAMediaTimingFunction(name: .easeIn)
+        fade.fillMode = .forwards
+        fade.isRemovedOnCompletion = false
+        tile.add(fade, forKey: "blockFade")
+      }
+    }
+
+    // Clean up tiles after the full transition completes
+    DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration + 0.05) {
+      if let tiles = imageLayer.sublayers?.filter({ $0.name == "blockTile" }) {
+        for tile in tiles { tile.removeFromSuperlayer() }
+      }
     }
   }
 }

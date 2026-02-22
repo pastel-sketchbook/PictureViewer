@@ -31,9 +31,12 @@ struct ImageItem: Identifiable, Hashable {
 /// `flip`, `bend`, and `curl` are single-effect transitions.
 /// `book` is a realistic page turn — `pageCurl` going forward, `pageUnCurl` going
 /// backward — with a natural timing curve that mimics lifting a real page corner.
+/// `blocks` is a mosaic dissolve — the old image breaks into a grid of tiles that
+/// fade out with staggered delays, revealing the new image underneath.
 enum SlideAnimationType: CaseIterable {
   case flip
   case bend
   case curl
   case book
+  case blocks
 }

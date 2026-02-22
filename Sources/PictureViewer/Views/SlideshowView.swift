@@ -287,6 +287,7 @@ extension SlideshowView {
       case .bend: return DesignSystem.speedyBendDuration
       case .curl: return DesignSystem.speedyCurlDuration
       case .book: return DesignSystem.speedyBookDuration
+      case .blocks: return DesignSystem.speedyBlocksDuration
       }
     } else {
       switch currentAnimationType {
@@ -294,6 +295,7 @@ extension SlideshowView {
       case .bend: return DesignSystem.bendDuration
       case .curl: return DesignSystem.curlDuration
       case .book: return DesignSystem.bookDuration
+      case .blocks: return DesignSystem.blocksDuration
       }
     }
   }

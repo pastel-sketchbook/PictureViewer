@@ -111,6 +111,12 @@ enum DesignSystem {
   static let curlDuration: TimeInterval = 1.1
   /// Realistic book page turn — slightly longer for a natural, unhurried feel.
   static let bookDuration: TimeInterval = 1.0
+  /// Total wall-clock time for the blocks transition (per-block fade + max stagger).
+  static let blocksDuration: TimeInterval = 1.2
+  /// How long each individual block takes to fade out.
+  static let blocksBlockFade: TimeInterval = 0.35
+  /// Target block edge size in points — the grid adapts to the image rect.
+  static let blocksEdge: CGFloat = 100
 
   // MARK: - Speedy Mode
 
@@ -119,6 +125,7 @@ enum DesignSystem {
   static let speedyBendDuration: TimeInterval = 0.6
   static let speedyCurlDuration: TimeInterval = 0.55
   static let speedyBookDuration: TimeInterval = 0.5
+  static let speedyBlocksDuration: TimeInterval = 0.6
 }
 
 // MARK: - Color Hex Extension
