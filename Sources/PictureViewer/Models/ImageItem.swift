@@ -33,10 +33,16 @@ struct ImageItem: Identifiable, Hashable {
 /// backward — with a natural timing curve that mimics lifting a real page corner.
 /// `blocks` is a mosaic dissolve — the old image breaks into a grid of tiles that
 /// fade out with staggered delays, revealing the new image underneath.
+/// `zoomFront` scales the old image toward the viewer while fading out.
+/// `pixelate` progressively pixelates the old image then dissolves it.
+/// `spiral` reveals tiles in clockwise spiral order from outer edge inward.
 enum SlideAnimationType: CaseIterable {
   case flip
   case bend
   case curl
   case book
   case blocks
+  case zoomFront
+  case pixelate
+  case spiral
 }

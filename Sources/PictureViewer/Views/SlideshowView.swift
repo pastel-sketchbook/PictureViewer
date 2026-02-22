@@ -288,6 +288,9 @@ extension SlideshowView {
       case .curl: return DesignSystem.speedyCurlDuration
       case .book: return DesignSystem.speedyBookDuration
       case .blocks: return DesignSystem.speedyBlocksDuration
+      case .zoomFront: return DesignSystem.speedyZoomFrontDuration
+      case .pixelate: return DesignSystem.speedyPixelateDuration
+      case .spiral: return DesignSystem.speedySpiralDuration
       }
     } else {
       switch currentAnimationType {
@@ -296,6 +299,9 @@ extension SlideshowView {
       case .curl: return DesignSystem.curlDuration
       case .book: return DesignSystem.bookDuration
       case .blocks: return DesignSystem.blocksDuration
+      case .zoomFront: return DesignSystem.zoomFrontDuration
+      case .pixelate: return DesignSystem.pixelateDuration
+      case .spiral: return DesignSystem.spiralDuration
       }
     }
   }

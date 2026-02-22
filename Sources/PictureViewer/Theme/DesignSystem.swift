@@ -117,6 +117,12 @@ enum DesignSystem {
   static let blocksBlockFade: TimeInterval = 0.35
   /// Target block edge size in points — the grid adapts to the image rect.
   static let blocksEdge: CGFloat = 100
+  /// Zoom-front: old image scales up toward viewer then fades out.
+  static let zoomFrontDuration: TimeInterval = 0.8
+  /// Pixelate: old image progressively pixelates then dissolves.
+  static let pixelateDuration: TimeInterval = 1.0
+  /// Spiral: tiles reveal in clockwise spiral order from outer edge inward.
+  static let spiralDuration: TimeInterval = 1.4
 
   // MARK: - Speedy Mode
 
@@ -126,6 +132,9 @@ enum DesignSystem {
   static let speedyCurlDuration: TimeInterval = 0.55
   static let speedyBookDuration: TimeInterval = 0.5
   static let speedyBlocksDuration: TimeInterval = 0.6
+  static let speedyZoomFrontDuration: TimeInterval = 0.4
+  static let speedyPixelateDuration: TimeInterval = 0.5
+  static let speedySpiralDuration: TimeInterval = 0.7
 }
 
 // MARK: - Color Hex Extension
