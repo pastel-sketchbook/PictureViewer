@@ -57,10 +57,12 @@ struct SlideshowControlBar: View {
       // Play
       controlButton(
         action: onPlay,
+        isActive: isPlaying,
+        activeColor: DesignSystem.accentSurface,
         icon: {
           let color =
             isPlaying
-            ? DesignSystem.textColor.opacity(0.4)
+            ? DesignSystem.accent
             : DesignSystem.textColor
           PlayIcon()
             .lineIconStyle(color: color, size: 18)
@@ -70,11 +72,13 @@ struct SlideshowControlBar: View {
       // Stop
       controlButton(
         action: onStop,
+        isActive: !isPlaying,
+        activeColor: DesignSystem.secondary.opacity(0.4),
         icon: {
           let color =
             isPlaying
             ? DesignSystem.textColor
-            : DesignSystem.textColor.opacity(0.4)
+            : DesignSystem.secondary
           StopIcon()
             .lineIconStyle(color: color, size: 18)
         }
@@ -92,7 +96,11 @@ struct SlideshowControlBar: View {
         .frame(width: 1, height: 24)
 
       // Speed toggle
-      controlButton(action: onToggleSpeed) {
+      controlButton(
+        action: onToggleSpeed,
+        isActive: isSpeedy,
+        activeColor: DesignSystem.primary.opacity(0.4)
+      ) {
         SpeedIcon()
           .lineIconStyle(
             color: isSpeedy ? DesignSystem.slideshowButton : DesignSystem.textColor.opacity(0.4),
@@ -115,15 +123,26 @@ struct SlideshowControlBar: View {
   }
 
   /// Consistent circular hit-target for control buttons.
+  ///
+  /// When `isActive` is true, a filled circle in `activeColor` appears behind the icon
+  /// to indicate the button's current state at a glance.
   private func controlButton<Icon: View>(
     action: @escaping () -> Void,
+    isActive: Bool = false,
+    activeColor: Color = .clear,
     @ViewBuilder icon: () -> Icon
   ) -> some View {
     Button(action: action) {
       icon()
         .frame(width: 36, height: 36)
+        .background(
+          Circle()
+            .fill(isActive ? activeColor : .clear)
+            .frame(width: 32, height: 32)
+        )
         .contentShape(Circle())
     }
     .buttonStyle(.plain)
+    .animation(.easeInOut(duration: 0.25), value: isActive)
   }
 }
