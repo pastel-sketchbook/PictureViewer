@@ -16,8 +16,8 @@ struct SlideshowImageView: NSViewRepresentable {
   let isForward: Bool
   @Binding var isAnimating: Bool
 
-  func makeNSView(context: Context) -> NSView {
-    let container = NSView()
+  func makeNSView(context: Context) -> SlideshowContainerView {
+    let container = SlideshowContainerView()
     container.wantsLayer = true
     container.layer?.backgroundColor = NSColor.clear.cgColor
 
@@ -37,21 +37,23 @@ struct SlideshowImageView: NSViewRepresentable {
     return container
   }
 
-  func updateNSView(_ nsView: NSView, context: Context) {
+  func updateNSView(_ nsView: SlideshowContainerView, context: Context) {
     guard let rootLayer = nsView.layer,
       let imageLayer = rootLayer.sublayers?.first(where: { $0.name == "imageLayer" })
     else { return }
 
-    // Resize the image layer to fill the container
-    CATransaction.begin()
-    CATransaction.setDisableActions(true)
-    imageLayer.frame = rootLayer.bounds
-    CATransaction.commit()
-
     guard let newImage = image else {
+      CATransaction.begin()
+      CATransaction.setDisableActions(true)
+      nsView.currentImageSize = .zero
+      imageLayer.frame = rootLayer.bounds
       imageLayer.contents = nil
+      CATransaction.commit()
       return
     }
+
+    // Store image size so layout() can recalculate on container resize
+    nsView.currentImageSize = newImage.size
 
     // Only animate if there was a previous image (not first load)
     let hadPreviousImage = imageLayer.contents != nil
@@ -66,6 +68,13 @@ struct SlideshowImageView: NSViewRepresentable {
 
       imageLayer.add(transition, forKey: "slideTransition")
     }
+
+    // Size the image layer to the aspect-fitted rect so curl/flip
+    // transitions match the visible image bounds — not the full container.
+    CATransaction.begin()
+    CATransaction.setDisableActions(true)
+    imageLayer.frame = nsView.fittedImageRect
+    CATransaction.commit()
 
     imageLayer.contents = newImage.asCGImage
   }
@@ -119,6 +128,50 @@ struct SlideshowImageView: NSViewRepresentable {
       return isForward ? .fromRight : .fromLeft
     case .flip, .bend, .curl:
       return .fromRight
+    }
+  }
+}
+
+// MARK: - Container view with aspect-fit layout
+
+/// Custom container that keeps the image layer sized to the aspect-fitted rect.
+///
+/// On window resize, `layout()` recalculates the fitted rect so the image layer
+/// (and its curl/flip transitions) always matches the visible image bounds.
+class SlideshowContainerView: NSView {
+  var currentImageSize: CGSize = .zero
+
+  override func layout() {
+    super.layout()
+    guard let imageLayer = layer?.sublayers?.first(where: { $0.name == "imageLayer" })
+    else { return }
+    CATransaction.begin()
+    CATransaction.setDisableActions(true)
+    imageLayer.frame = fittedImageRect
+    CATransaction.commit()
+  }
+
+  /// The aspect-fitted rect for the current image within this view's bounds.
+  var fittedImageRect: CGRect {
+    guard currentImageSize.width > 0, currentImageSize.height > 0,
+      bounds.width > 0, bounds.height > 0
+    else { return bounds }
+
+    let imageAspect = currentImageSize.width / currentImageSize.height
+    let containerAspect = bounds.width / bounds.height
+
+    if imageAspect > containerAspect {
+      // Wider image — letterboxed top/bottom
+      let width = bounds.width
+      let height = width / imageAspect
+      let originY = (bounds.height - height) / 2
+      return CGRect(x: 0, y: originY, width: width, height: height)
+    } else {
+      // Taller image — pillarboxed left/right
+      let height = bounds.height
+      let width = height * imageAspect
+      let originX = (bounds.width - width) / 2
+      return CGRect(x: originX, y: 0, width: width, height: height)
     }
   }
 }
