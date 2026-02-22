@@ -38,7 +38,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
   @objc @MainActor private func windowDidBecomeKey(_ notification: Notification) {
     guard !didEnterFullScreen, let window = notification.object as? NSWindow else { return }
     didEnterFullScreen = true
-    window.toggleFullScreen(nil)
+    // Ensure the window supports full screen, then enter after a short layout delay.
+    window.collectionBehavior.insert(.fullScreenPrimary)
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+      window.toggleFullScreen(nil)
+    }
   }
 
   /// Registers all .ttf fonts found in the bundled Fonts resource directory.
