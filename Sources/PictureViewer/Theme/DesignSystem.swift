@@ -48,6 +48,8 @@ enum DesignSystem {
   static let secondary = Color(hex: 0xF5CAC3)  // soft coral
   /// Body text, icon strokes.
   static let textColor = Color(hex: 0x5C5C5C)  // soft charcoal
+  /// Gallery header title.
+  static let headerTitle = Color(hex: 0xFF8C00)  // dark orange
   /// Slideshow filename label — dark cyan to match slideshow controls.
   static let slideshowFilename = Color(hex: 0x008B8B)  // dark cyan
 

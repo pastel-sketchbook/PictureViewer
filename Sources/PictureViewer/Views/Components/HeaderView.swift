@@ -8,16 +8,32 @@ struct HeaderView: View {
   let imageCount: Int
   let onPlaySlideshow: () -> Void
 
+  /// App version from the main bundle's Info.plist.
+  private var appVersion: String {
+    Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+  }
+
   var body: some View {
     HStack {
       VStack(alignment: .leading, spacing: 2) {
-        Text("Picture Viewer")
-          .font(DesignSystem.headerFont)
-          .foregroundColor(DesignSystem.textColor)
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+          Text("Picture Viewer")
+            .font(DesignSystem.headerFont)
+            .foregroundColor(DesignSystem.headerTitle)
+
+          Text("v\(appVersion)")
+            .font(.system(size: 10, weight: .semibold, design: .rounded))
+            .foregroundColor(DesignSystem.slideshowButton)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(
+              Capsule().fill(DesignSystem.slideshowButton.opacity(0.12))
+            )
+        }
 
         if imageCount > 0 {
           Text("\(imageCount) pictures")
-            .font(DesignSystem.captionFont)
+            .font(DesignSystem.captionSemiboldFont)
             .foregroundColor(DesignSystem.textColor.opacity(0.85))
         }
       }
